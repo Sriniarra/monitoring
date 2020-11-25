@@ -1,0 +1,86 @@
+Monitering Server:
+
+steps to be performed:
+1) Install Prometheus
+2) Configure Prometheus
+3) Install Grafana
+
+Installing Prometheus:
+
+https://github.com/prometheus/prometheus 
+Download and untar the below file:
+tar -xvf prometheus-2.11.1.linux-amd64.tar.gz
+
+
+Configuring Prometheus:
+cat prometheus.yml
+# my global config
+global:
+  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  # scrape_timeout is set to the global default (10s).
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      # - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'cassandra'
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    static_configs:
+    - targets: ['TargetIP:7070','TargetIP:7070']
+
+
+Start the Service:
+./prometheus &
+
+
+
+Installing Grafana:
+Download and install the grafana-7.0.3-1.x86_64.rpm
+yum install grafana-7.0.3-1.x86_64.rpm
+
+service grafana-server start
+on Cassandra Database Server:
+
+Download  : jmx_prometheus_javaagent-0.13.0.jar
+URL: To download the jar file:
+https://search.maven.org/remotecontent?filepath=io/prometheus/jmx/jmx_prometheus_javaagent/0.13.0/jmx_prometheus_javaagent-0.13.0.jar
+
+and place the file in Cassandra_home/lib  Location
+
+
+Download  jmx_exporter.yml  ===> Cassandra metrics files and place in conf directory location==> I renamed to jmx_expoerter.yml
+https://github.com/prometheus/jmx_exporter/blob/master/example_configs/cassandra.yml 
+https://github.com/prometheus/jmx_exporter/blob/master/README.md
+
+Metrics information:
+https://cassandra.apache.org/doc/latest/operating/metrics.html#
+
+
+Place the beloe entry in cassandra-env.sh file
+JVM_OPTS="$JVM_OPTS -javaagent:$CASSANDRA_HOME/lib/jmx_prometheus_javaagent-0.13.0.jar=7070:/u01/cassandra/apache-cassandra-3.0.17/conf/jmx_exporter.yml"
+
+
+
+############################
+Prometheus Installed hostname and port
+open in a browser to see the targets
+http://hostname:9090/targets
+
+
+
